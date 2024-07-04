@@ -6,11 +6,15 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,35 +39,64 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    var shopItems by remember { mutableStateOf(listOf<ShoppingItem>()) }
-                    Column(modifier =Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center ) {
-                        Button(onClick = { /*TODO*/ }, modifier = Modifier.align(Alignment.CenterHorizontally)) {
-                            Text("Add item")
-                        }
-                        LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp)){
-                            items(shopItems){
-
-                            }
-                        }
-                    }
+                    shoppingMain()
                 }
             }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun shoppingMain() {
+    var shopItems by remember { mutableStateOf(listOf<ShoppingItem>()) }
+    var showDialog by remember { mutableStateOf(false) }
+    var itemName by remember { mutableStateOf("") }
+    var itemQuantity by remember { mutableStateOf("") }
+    Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
+        Button(
+            onClick = { showDialog = true },
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        ) {
+            Text("Add item")
+        }
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            items(shopItems) {
+
+            }
+        }
+    }
+    if (showDialog) {
+        AlertDialog(onDismissRequest = { showDialog = false }, confirmButton = {
+
+        }, title = { Text(text = "Shopping list item") }, text = {
+            Column {
+                OutlinedTextField(
+                    value = itemName, onValueChange = {
+                        itemName = it
+                    }, singleLine = true, modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                )
+                OutlinedTextField(
+                    value = itemQuantity, onValueChange = {
+                        itemQuantity = it
+                    }, singleLine = true, modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                )
+            }
+        })
+    }
+}
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     Text(
         text = "Hello $name!",
         modifier = modifier
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    ProjekatMobilneTheme {
-        Greeting("Android")
-    }
 }
