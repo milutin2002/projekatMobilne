@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -26,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.text.isDigitsOnly
 import com.example.projekatmobilne.model.ShoppingItem
 import com.example.projekatmobilne.ui.theme.ProjekatMobilneTheme
 
@@ -52,7 +54,7 @@ fun shoppingMain() {
     var shopItems by remember { mutableStateOf(listOf<ShoppingItem>()) }
     var showDialog by remember { mutableStateOf(false) }
     var itemName by remember { mutableStateOf("") }
-    var itemQuantity by remember { mutableStateOf("") }
+    var itemQuantity by remember { mutableStateOf("0") }
     Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
         Button(
             onClick = { showDialog = true },
@@ -72,7 +74,21 @@ fun shoppingMain() {
     }
     if (showDialog) {
         AlertDialog(onDismissRequest = { showDialog = false }, confirmButton = {
-
+            Row (modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp), horizontalArrangement = Arrangement.SpaceBetween){
+                Button(onClick = {
+                    if(itemName.isNotBlank()){
+                        val newItem=ShoppingItem(name = itemName, quantity = itemQuantity.toInt(),id=shopItems.size+1)
+                        shopItems=shopItems+newItem
+                        itemName="";
+                        itemQuantity="0"
+                        showDialog=false
+                    }
+                }) {
+                    Text(text = "Add")
+                }
+            }
         }, title = { Text(text = "Shopping list item") }, text = {
             Column {
                 OutlinedTextField(
@@ -84,7 +100,9 @@ fun shoppingMain() {
                 )
                 OutlinedTextField(
                     value = itemQuantity, onValueChange = {
-                        itemQuantity = it
+                        if(it.isDigitsOnly()) {
+                            itemQuantity = it
+                        }
                     }, singleLine = true, modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp)
