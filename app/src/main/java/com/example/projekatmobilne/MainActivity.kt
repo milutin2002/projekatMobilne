@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,9 +12,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -78,9 +81,26 @@ fun shoppingMain() {
                 .padding(16.dp)
         ) {
             items(shopItems) {
-                ShoppingItemShow(item = it, onEditClick = {  }, onDeleteClick = {
-                    
-                })
+                item->
+                if(item.isEditing){
+                    ShoppingItemEditor(shopingItem = item) {
+                        editedName,editQuantity->
+                            shopItems = shopItems.map { it.copy(isEditing = false) }
+                            val editedItem = shopItems.find { it.id == item.id }
+                            editedItem?.let {
+                                it.name = editedName
+                                it.quantity = editQuantity
+                            }
+                    }
+                }
+                else{
+                    ShoppingItemShow(item = item, onEditClick = {
+                        shopItems=shopItems.map { it.copy(isEditing = it.id==item.id) }
+                    }, onDeleteClick = {
+                        shopItems=shopItems-item
+                    })
+                }
+
             }
         }
     }
@@ -136,6 +156,37 @@ fun ShoppingItemShow(item:ShoppingItem,onEditClick:()->Unit,onDeleteClick:()->Un
         }
         IconButton(onClick =  onDeleteClick) {
             Icon(imageVector = Icons.Default.Delete,contentDescription = null)
+        }
+    }
+}
+@Composable
+fun ShoppingItemEditor(shopingItem:ShoppingItem,onEditComplete:(String,Int)->Unit){
+    var editName by remember { mutableStateOf(shopingItem.name) }
+    var editQuantity by remember { mutableStateOf(shopingItem.quantity.toString()) }
+    var isEditing by remember { mutableStateOf(shopingItem.isEditing) }
+    Row (modifier = Modifier
+        .fillMaxWidth()
+        .background(Color.White)
+        .padding(8.dp), horizontalArrangement = Arrangement.SpaceEvenly){
+        Column {
+            BasicTextField(value = editName, onValueChange ={
+                editName=it
+            } , singleLine = true, modifier = Modifier
+                .wrapContentSize()
+                .padding(8.dp))
+            BasicTextField(value = editQuantity, onValueChange ={
+                if(it.isDigitsOnly()){
+                    editQuantity=it
+                }
+            } , singleLine = true, modifier = Modifier
+                .wrapContentSize()
+                .padding(8.dp))
+            Button(onClick = {
+                isEditing=false
+                onEditComplete(editName,editQuantity.toInt())
+            }) {
+                Text(text = "Save")
+            }
         }
     }
 }
