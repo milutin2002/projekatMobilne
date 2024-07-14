@@ -1,5 +1,6 @@
 package com.example.projekatmobilne
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -41,8 +42,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.text.isDigitsOnly
+import androidx.navigation.NavController
 import com.example.projekatmobilne.model.ShoppingItem
 import com.example.projekatmobilne.ui.theme.ProjekatMobilneTheme
+import com.example.projekatmobilne.viewModels.LocationViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,7 +57,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    shoppingMain()
+                    //shoppingMain()
                 }
             }
         }
@@ -63,7 +66,7 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun shoppingMain() {
+fun shoppingMain(locationUtils: LocationUtils, viewModel: LocationViewModel, navController:NavController, context: Context, adress:String) {
     var shopItems by remember { mutableStateOf(listOf<ShoppingItem>()) }
     var showDialog by remember { mutableStateOf(false) }
     var itemName by remember { mutableStateOf("") }
