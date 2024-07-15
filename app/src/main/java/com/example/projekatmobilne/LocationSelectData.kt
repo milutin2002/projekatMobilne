@@ -19,7 +19,7 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 
 @Composable
-fun locationSelectScreen(location:LocationData,onLocationSelected:(LocationData)->Unit){
+fun LocationSelectScreen(location:LocationData,onLocationSelected:(LocationData)->Unit){
     val userLocation= remember {
         mutableStateOf(LatLng(location.latitude,location.longitude))
     }
@@ -37,6 +37,7 @@ fun locationSelectScreen(location:LocationData,onLocationSelected:(LocationData)
         var newLocation:LocationData
         Button(onClick = {
             newLocation=LocationData(userLocation.value.latitude,userLocation.value.longitude)
+            onLocationSelected(newLocation)
         }) {
             Text(text = "Set Location")
         }
