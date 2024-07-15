@@ -1,4 +1,4 @@
-package com.example.projekatmobilne.Service
+package com.example.projekatmobilne.RetrofitPackage
 
 import com.example.projekatmobilne.model.GeocodingResponse
 import retrofit2.http.GET

@@ -1,4 +1,4 @@
-package com.example.projekatmobilne
+package com.example.projekatmobilne.utils
 
 import android.Manifest
 import android.annotation.SuppressLint

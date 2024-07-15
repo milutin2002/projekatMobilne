@@ -1,4 +1,4 @@
-package com.example.projekatmobilne
+package com.example.projekatmobilne.ui.theme.screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
