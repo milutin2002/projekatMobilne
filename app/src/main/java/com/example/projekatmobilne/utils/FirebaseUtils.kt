@@ -1,4 +1,7 @@
-package com.example.projekatmobilne.utils
+package com.example.proj
+
+import com.example.projekatmobilne.viewModels.LocationViewModel
+
 
 
 import android.net.Uri
@@ -42,10 +45,12 @@ object FirebaseUtil {
         }
     }
 
-    fun signIn(username: String, password: String, onComplete: () -> Unit) {
+    fun signIn(username: String, password: String, viewModel: LocationViewModel,onComplete: (String,LocationViewModel) -> Unit) {
         auth.signInWithEmailAndPassword(username, password).addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                onComplete()
+                if(auth.currentUser!=null){
+                    onComplete(auth.currentUser!!.uid,viewModel)
+                }
             } else {
                 // Handle sign-in failure
             }

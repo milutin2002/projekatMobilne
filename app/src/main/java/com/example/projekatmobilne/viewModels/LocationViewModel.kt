@@ -20,12 +20,22 @@ class LocationViewModel:ViewModel() {
     }
     private val _address= mutableStateOf(listOf<GeocodingResults>())
     val address:State<List<GeocodingResults>> = _address
-
+    private val _id = mutableStateOf("")
+    val id : State<String> = _id
     fun fetchAddress(latLng: String){
         try {
             viewModelScope.launch {
                 val results=RetrofitClient.create().getAdressFromCordinates(latLng,"")
                 _address.value=results.results
+            }
+        }catch (e:Exception){
+            Log.d("res1","${e.cause}")
+        }
+    }
+    fun setUserId(newId:String){
+        try {
+            viewModelScope.launch {
+                _id.value=newId
             }
         }catch (e:Exception){
             Log.d("res1","${e.cause}")

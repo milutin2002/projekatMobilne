@@ -37,6 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.text.isDigitsOnly
@@ -49,6 +50,7 @@ import com.example.projekatmobilne.viewModels.LocationViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun shoppingMain(locationUtils: LocationUtils, viewModel: LocationViewModel, navController: NavController, context: Context, adress:String) {
+    Toast.makeText(LocalContext.current,"Tvoj id je "+viewModel.id,Toast.LENGTH_LONG).show()
     var shopItems by remember { mutableStateOf(listOf<ShoppingItem>()) }
     var showDialog by remember { mutableStateOf(false) }
     var itemName by remember { mutableStateOf("") }

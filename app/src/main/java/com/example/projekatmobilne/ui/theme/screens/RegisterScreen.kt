@@ -30,7 +30,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.compose.rememberImagePainter
 import coil.request.ImageRequest
-import com.example.projekatmobilne.utils.FirebaseUtil
+import com.example.proj.FirebaseUtil
 
 
 @Composable
@@ -93,7 +93,7 @@ fun RegisterScreen(navController: NavController) {
         }
         Button(onClick = {
             FirebaseUtil.register(username, password, fullName, phoneNumber) {
-                navController.navigate("shoppingListScreen")
+                navController.navigate("login")
             }
         }) {
             Text("Register")
