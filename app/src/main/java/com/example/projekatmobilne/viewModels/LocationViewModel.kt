@@ -5,14 +5,17 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.projekatmobilne.Repository.UserRepository
 import com.example.projekatmobilne.RetrofitPackage.RetrofitClient
 import com.example.projekatmobilne.model.GeocodingResponse
 import com.example.projekatmobilne.model.GeocodingResults
 import com.example.projekatmobilne.model.LocationData
+import com.example.projekatmobilne.model.User
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.launch
 
 class LocationViewModel:ViewModel() {
+    private val userRepository:UserRepository= UserRepository()
     private val _location= mutableStateOf<LocationData?>(null)
     val location : State<LocationData?> = _location
     fun updateLocation(newLocation:LocationData){
@@ -41,4 +44,5 @@ class LocationViewModel:ViewModel() {
             Log.d("res1","${e.cause}")
         }
     }
+
 }

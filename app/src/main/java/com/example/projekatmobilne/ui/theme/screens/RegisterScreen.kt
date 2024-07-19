@@ -26,15 +26,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.compose.rememberImagePainter
 import coil.request.ImageRequest
 import com.example.proj.FirebaseUtil
+import com.example.projekatmobilne.model.User
+import com.example.projekatmobilne.viewModels.UserProfileViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 
 @Composable
-fun RegisterScreen(navController: NavController) {
+fun RegisterScreen(navController: NavController,userViewModel: UserProfileViewModel) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var fullName by remember { mutableStateOf("") }
@@ -92,8 +96,10 @@ fun RegisterScreen(navController: NavController) {
             )
         }
         Button(onClick = {
-            FirebaseUtil.register(username, password, fullName, phoneNumber) {
-                navController.navigate("login")
+            photoUri?.let {
+                FirebaseUtil.register(username, password, fullName, phoneNumber,userViewModel, it) {
+                    navController.navigate("login")
+                }
             }
         }) {
             Text("Register")

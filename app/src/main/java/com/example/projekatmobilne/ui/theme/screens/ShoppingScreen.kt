@@ -50,7 +50,6 @@ import com.example.projekatmobilne.viewModels.LocationViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun shoppingMain(locationUtils: LocationUtils, viewModel: LocationViewModel, navController: NavController, context: Context, adress:String) {
-    Toast.makeText(LocalContext.current,"Tvoj id je "+viewModel.id,Toast.LENGTH_LONG).show()
     var shopItems by remember { mutableStateOf(listOf<ShoppingItem>()) }
     var showDialog by remember { mutableStateOf(false) }
     var itemName by remember { mutableStateOf("") }

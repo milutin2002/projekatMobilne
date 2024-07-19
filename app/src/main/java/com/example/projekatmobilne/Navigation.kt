@@ -10,9 +10,11 @@ import androidx.navigation.compose.rememberNavController
 import com.example.projekatmobilne.ui.theme.screens.LocationSelectScreen
 import com.example.projekatmobilne.ui.theme.screens.LoginScreen
 import com.example.projekatmobilne.ui.theme.screens.RegisterScreen
+import com.example.projekatmobilne.ui.theme.screens.UserProfileScreen
 import com.example.projekatmobilne.ui.theme.screens.shoppingMain
 import com.example.projekatmobilne.utils.LocationUtils
 import com.example.projekatmobilne.viewModels.LocationViewModel
+import com.example.projekatmobilne.viewModels.UserProfileViewModel
 
 @Composable
 fun Navigation(){
@@ -20,6 +22,7 @@ fun Navigation(){
     val viewModel: LocationViewModel = viewModel()
     val context= LocalContext.current
     val locationUtils= LocationUtils(context)
+    val userViewModel:UserProfileViewModel=viewModel()
     NavHost(navController = navController, startDestination = "login"){
         composable("shoppingListScreen"){
             shoppingMain(
@@ -34,11 +37,14 @@ fun Navigation(){
             LoginScreen(navController = navController,viewModel)
         }
         composable("register"){
-            RegisterScreen(navController = navController)
+            RegisterScreen(navController = navController,userViewModel)
+        }
+        composable("userProfile"){
+            UserProfileScreen(navController = navController)
         }
         dialog("locationScreen"){navBackStackEntry ->
             viewModel.location.value?.let {it1->
-                LocationSelectScreen(location = it1) {locationData->
+                LocationSelectScreen(viewModel,location = it1) {locationData->
                     viewModel.fetchAddress("${locationData.latitude},${locationData.longitude}")
                     navController.popBackStack()
                 }

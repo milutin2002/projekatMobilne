@@ -52,7 +52,7 @@ fun LoginScreen(navController: NavController,viewModel: LocationViewModel) {
         Button(onClick = {
             FirebaseUtil.signIn(username, password, viewModel) { s,v->
                 v.setUserId(s)
-                navController.navigate("shoppingListScreen")
+                navController.navigate("userProfile")
             }
         }) {
             Text("Login")
