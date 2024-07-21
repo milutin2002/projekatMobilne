@@ -4,6 +4,8 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -14,7 +16,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ProjekatMobilne"
         tools:targetApi="31">
-
+        <service
+            android:name=".Service.LocationService"
+            android:enabled="true"
+            android:exported="false"
+            android:permission="android.permission.FOREGROUND_SERVICE"
+            >
+            <intent-filter>
+                <action android:name="com.example.projekatmobilne.LocationService.ACTION_START" />
+                <action android:name="com.example.projekatmobilne.LocationService.ACTION_STOP" />
+            </intent-filter>
+        </service>
+        <receiver android:name=".Service.NotificationReceiver" />
         <meta-data android:name="com.google.android.geo.API_KEY"
             android:value=""
             />
@@ -22,6 +35,7 @@
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
+            android:foregroundServiceType="location"
             android:theme="@style/Theme.ProjekatMobilne">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

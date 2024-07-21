@@ -3,11 +3,14 @@ package com.example.projekatmobilne.utils
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Address
 import android.location.Geocoder
+import android.os.Build
 import android.os.Looper
 import androidx.core.content.ContextCompat
+import com.example.projekatmobilne.Service.LocationService
 import com.example.projekatmobilne.model.LocationData
 import com.example.projekatmobilne.viewModels.LocationViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -21,6 +24,23 @@ import java.util.Locale
 
 class LocationUtils(val context: Context) {
 
+    fun startService() {
+        val intent = Intent(context, LocationService::class.java).apply {
+            action = LocationService.ACTION_START
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(intent)
+        } else {
+            context.startService(intent)
+        }
+    }
+
+    fun stopService() {
+        val intent = Intent(context, LocationService::class.java).apply {
+            action = LocationService.ACTION_STOP
+        }
+        context.stopService(intent)
+    }
     private val _fusedLocationClient: FusedLocationProviderClient
             = LocationServices.getFusedLocationProviderClient(context)
 

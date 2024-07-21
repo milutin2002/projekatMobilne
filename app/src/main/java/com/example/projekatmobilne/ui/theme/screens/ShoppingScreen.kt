@@ -1,6 +1,7 @@
 package com.example.projekatmobilne.ui.theme.screens
 
 import android.content.Context
+import android.content.Intent
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -44,6 +45,7 @@ import androidx.core.text.isDigitsOnly
 import androidx.navigation.NavController
 import com.example.projekatmobilne.utils.LocationUtils
 import com.example.projekatmobilne.MainActivity
+import com.example.projekatmobilne.Service.LocationService
 import com.example.projekatmobilne.model.ShoppingItem
 import com.example.projekatmobilne.viewModels.LocationViewModel
 
@@ -90,6 +92,19 @@ fun shoppingMain(locationUtils: LocationUtils, viewModel: LocationViewModel, nav
         ) {
             Text("Add item")
         }
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+            Button(onClick = {
+                locationUtils.startService()
+            }) {
+                Text(text = "Start Location Service")
+            }
+
+            Button(onClick = {
+                locationUtils.stopService()
+            }) {
+                Text(text = "Stop Location Service")
+            }
+        }
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -119,6 +134,7 @@ fun shoppingMain(locationUtils: LocationUtils, viewModel: LocationViewModel, nav
 
             }
         }
+
     }
     if (showDialog) {
         AlertDialog(onDismissRequest = { showDialog = false }, confirmButton = {
