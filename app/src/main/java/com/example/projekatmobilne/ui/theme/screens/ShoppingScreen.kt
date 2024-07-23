@@ -43,11 +43,16 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.text.isDigitsOnly
 import androidx.navigation.NavController
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.projekatmobilne.utils.LocationUtils
 import com.example.projekatmobilne.MainActivity
 import com.example.projekatmobilne.Service.LocationService
+import com.example.projekatmobilne.Service.NotificationWorker
 import com.example.projekatmobilne.model.ShoppingItem
 import com.example.projekatmobilne.viewModels.LocationViewModel
+import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -94,13 +99,13 @@ fun shoppingMain(locationUtils: LocationUtils, viewModel: LocationViewModel, nav
         }
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
             Button(onClick = {
-                locationUtils.startService()
+                setupPeriodicWork(context)
             }) {
                 Text(text = "Start Location Service")
             }
 
             Button(onClick = {
-                locationUtils.stopService()
+                stopPeriodicWork(context)
             }) {
                 Text(text = "Stop Location Service")
             }
@@ -258,4 +263,18 @@ fun ShoppingItemEditor(shopingItem: ShoppingItem, onEditComplete:(String, Int)->
             }
         }
     }
+}
+fun setupPeriodicWork(context: Context) {
+    val workRequest = PeriodicWorkRequestBuilder<NotificationWorker>(15, TimeUnit.MINUTES)
+        .build()
+
+    WorkManager.getInstance(context)
+        .enqueueUniquePeriodicWork(
+            "LocationNotificationWork",
+            ExistingPeriodicWorkPolicy.REPLACE,
+            workRequest
+        )
+}
+fun stopPeriodicWork(context: Context) {
+    WorkManager.getInstance(context).cancelUniqueWork("LocationNotificationWork")
 }
