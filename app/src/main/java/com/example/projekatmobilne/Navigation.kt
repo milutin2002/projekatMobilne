@@ -1,5 +1,7 @@
 package com.example.projekatmobilne
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -16,6 +18,7 @@ import com.example.projekatmobilne.utils.LocationUtils
 import com.example.projekatmobilne.viewModels.LocationViewModel
 import com.example.projekatmobilne.viewModels.UserProfileViewModel
 
+@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun Navigation(){
     val navController= rememberNavController()

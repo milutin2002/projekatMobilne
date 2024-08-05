@@ -1,10 +1,13 @@
 package com.example.projekatmobilne.ui.theme.screens
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -54,7 +57,7 @@ import com.example.projekatmobilne.model.ShoppingItem
 import com.example.projekatmobilne.viewModels.LocationViewModel
 import java.util.concurrent.TimeUnit
 
-@OptIn(ExperimentalMaterial3Api::class)
+@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun shoppingMain(locationUtils: LocationUtils, viewModel: LocationViewModel, navController: NavController, context: Context, adress:String) {
     var shopItems by remember { mutableStateOf(listOf<ShoppingItem>()) }
@@ -62,34 +65,38 @@ fun shoppingMain(locationUtils: LocationUtils, viewModel: LocationViewModel, nav
     var itemName by remember { mutableStateOf("") }
     var itemQuantity by remember { mutableStateOf("0") }
     val requestPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestMultiplePermissions() ,
+        contract = ActivityResultContracts.RequestMultiplePermissions(),
         onResult = { permissions ->
-            if(permissions[android.Manifest.permission.ACCESS_COARSE_LOCATION] == true
-                && permissions[android.Manifest.permission.ACCESS_FINE_LOCATION] == true){
+            if (permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true &&
+                permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true &&
+                (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q || permissions[Manifest.permission.ACCESS_BACKGROUND_LOCATION] == true)) {
                 // I HAVE ACCESS to location
-
                 locationUtils.requestLocationUpdates(viewModel = viewModel)
-            }else{
-                val rationaleRequired = ActivityCompat.shouldShowRequestPermissionRationale(
+            } else {
+                val rationaleRequired = (ActivityCompat.shouldShowRequestPermissionRationale(
                     context as MainActivity,
-                    android.Manifest.permission.ACCESS_FINE_LOCATION
+                    Manifest.permission.ACCESS_FINE_LOCATION
                 ) || ActivityCompat.shouldShowRequestPermissionRationale(
                     context as MainActivity,
-                    android.Manifest.permission.ACCESS_COARSE_LOCATION
-                )
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )) && (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q || ActivityCompat.shouldShowRequestPermissionRationale(
+                    context as MainActivity,
+                    Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                ))
 
-                if(rationaleRequired){
+                if (rationaleRequired) {
                     Toast.makeText(context,
                         "Location Permission is required for this feature to work", Toast.LENGTH_LONG)
                         .show()
-                }else{
+                } else {
                     Toast.makeText(context,
                         "Location Permission is required. Please enable it in the Android Settings",
                         Toast.LENGTH_LONG)
                         .show()
                 }
             }
-        })
+        }
+    )
     Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
         Button(
             onClick = { showDialog = true },
@@ -99,6 +106,16 @@ fun shoppingMain(locationUtils: LocationUtils, viewModel: LocationViewModel, nav
         }
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
             Button(onClick = {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    requestPermissionLauncher.launch(arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                        Manifest.permission.ACCESS_BACKGROUND_LOCATION))
+                } else {
+                    requestPermissionLauncher.launch(arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION))
+                }
                 setupPeriodicWork(context)
             }) {
                 Text(text = "Start Location Service")

@@ -2,46 +2,77 @@ package com.example.projekatmobilne.Service
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
-import androidx.work.Worker
+import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.example.projekatmobilne.MainActivity
 import com.example.projekatmobilne.R
+import com.example.projekatmobilne.Repository.PlaceRepository
+import com.example.projekatmobilne.RetrofitPackage.RetrofitInstance
+import com.example.projekatmobilne.utils.LocationUtils
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
+import com.google.android.gms.maps.model.LatLng
 
-class NotificationWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
+class NotificationWorker(context: Context, workerParams: WorkerParameters) : CoroutineWorker(context, workerParams) {
 
-    override fun doWork(): Result {
-        sendNotification()
+    override suspend fun doWork(): Result {
+        val locationUtils = LocationUtils(applicationContext)
+        if(locationUtils.hasLocationPermission(context = applicationContext) && locationUtils.hasBackgroundLocationPermission()) { // Dobijanje trenutne lokacije u okviru koroutine konteksta
+            val location = withContext(Dispatchers.IO) {
+                getLocation(locationUtils)
+            }
+
+            // Ako je lokacija uspešno dobijena, zatraži najbliže prodavnice
+            if (location != null) {
+                val placesRepository = PlaceRepository(RetrofitInstance.apiService)
+                val apiKey = ""
+                val places = withContext(Dispatchers.IO) {
+                    placesRepository.fetchClosestPlace(
+                        "${location.latitude},${location.longitude}",
+                        1000,
+                        "shopping_mall",
+                        apiKey
+                    )
+                }
+                Log.d("Place ", places.toString())
+                // Slanje notifikacije sa najbližom prodavnicom ili porukom o neuspehu
+                if (places != null) {
+                    sendNotification("Nearest place: ${places.name}")
+                } else {
+                    sendNotification("No nearby stores found")
+                }
+            } else {
+                sendNotification("Unable to get location")
+            }
+        }
         return Result.success()
     }
 
-    private fun sendNotification() {
+    private suspend fun getLocation(locationUtils: LocationUtils): LatLng? {
+        return suspendCancellableCoroutine { continuation ->
+            locationUtils.getCoordinates { location ->
+                continuation.resume(location) {}
+            }
+        }
+    }
+
+    private fun sendNotification(message: String) {
         val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val channelId = "default_channel_id"
+        val channelId = "default_channel"
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(channelId, "Default Channel", NotificationManager.IMPORTANCE_DEFAULT)
             notificationManager.createNotificationChannel(channel)
         }
 
-        val intent = Intent(applicationContext, MainActivity::class.java)
-        val pendingIntent = PendingIntent.getActivity(
-            applicationContext,
-            0,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
         val notification = NotificationCompat.Builder(applicationContext, channelId)
-            .setContentTitle("Location Service")
-            .setContentText("Running in the background")
+            .setContentTitle("Nearby Store")
+            .setContentText(message)
             .setSmallIcon(R.drawable.ic_notification)
-            .setContentIntent(pendingIntent)
-            .setAutoCancel(true)
             .build()
 
         notificationManager.notify(1, notification)
