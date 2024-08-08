@@ -2,8 +2,8 @@ package com.example.projekatmobilne.ui.theme.screens
 
 import android.Manifest
 import android.content.Context
-import android.content.Intent
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -28,12 +28,12 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,7 +41,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.text.isDigitsOnly
@@ -49,21 +48,27 @@ import androidx.navigation.NavController
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.example.proj.FirebaseUtil.distanceBetween
+import com.example.proj.FirebaseUtil.fetchShoppingItems
 import com.example.projekatmobilne.utils.LocationUtils
 import com.example.projekatmobilne.MainActivity
-import com.example.projekatmobilne.Service.LocationService
 import com.example.projekatmobilne.Service.NotificationWorker
 import com.example.projekatmobilne.model.ShoppingItem
 import com.example.projekatmobilne.viewModels.LocationViewModel
+import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.firestore.FirebaseFirestore
 import java.util.concurrent.TimeUnit
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
-fun shoppingMain(locationUtils: LocationUtils, viewModel: LocationViewModel, navController: NavController, context: Context, adress:String) {
+fun shoppingMain(locationUtils: LocationUtils, viewModel: LocationViewModel, navController: NavController, context: Context, adress:String,latitude: Double, longitude: Double) {
     var shopItems by remember { mutableStateOf(listOf<ShoppingItem>()) }
+    var filteredItems by remember {mutableStateOf(listOf<ShoppingItem>())}
     var showDialog by remember { mutableStateOf(false) }
     var itemName by remember { mutableStateOf("") }
     var itemQuantity by remember { mutableStateOf("0") }
+    var searchField by remember { mutableStateOf("") }
+    val db = FirebaseFirestore.getInstance()
     val requestPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
         onResult = { permissions ->
@@ -97,6 +102,17 @@ fun shoppingMain(locationUtils: LocationUtils, viewModel: LocationViewModel, nav
             }
         }
     )
+    LaunchedEffect(Unit) {
+        fetchShoppingItems(
+            onSuccess = { fetchedItems ->
+             shopItems=fetchedItems
+                filteredItems=fetchedItems
+            },
+            onFailure = { exception ->
+                var errorMessage = "Error fetching items: ${exception.message}"
+            }
+        )
+    }
     Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
         Button(
             onClick = { showDialog = true },
@@ -127,12 +143,30 @@ fun shoppingMain(locationUtils: LocationUtils, viewModel: LocationViewModel, nav
                 Text(text = "Stop Location Service")
             }
         }
+        OutlinedTextField(
+            value = searchField,
+            onValueChange = { searchField = it
+                            if(searchField!=""){
+                                filteredItems=shopItems.filter {
+                                    item->
+                                    item.name.contains(searchField)
+                                }
+                            }
+                            else{
+                                filteredItems=shopItems
+                            }
+                            },
+            label = { Text("Search") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp)
+        )
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            items(shopItems) {
+            items(filteredItems) {
                     item->
                 if(item.isEditing){
                     ShoppingItemEditor(shopingItem = item) {
@@ -143,6 +177,14 @@ fun shoppingMain(locationUtils: LocationUtils, viewModel: LocationViewModel, nav
                             it.name = editedName
                             it.quantity = editQuantity
                             it.address=adress
+                            db.collection("shopping_items").document(it.id.toString())
+                                .set(it)
+                                .addOnSuccessListener {
+                                    Toast.makeText(context, "Item updated", Toast.LENGTH_SHORT).show()
+                                }
+                                .addOnFailureListener {
+                                    Toast.makeText(context, "Error updating item", Toast.LENGTH_SHORT).show()
+                                }
                         }
                     }
                 }
@@ -150,7 +192,16 @@ fun shoppingMain(locationUtils: LocationUtils, viewModel: LocationViewModel, nav
                     ShoppingItemShow(item = item, onEditClick = {
                         shopItems=shopItems.map { it.copy(isEditing = it.id==item.id) }
                     }, onDeleteClick = {
+                        filteredItems=filteredItems-item
                         shopItems=shopItems-item
+                        db.collection("shopping_items").document(item.id.toString())
+                            .delete()
+                            .addOnSuccessListener {
+                                Toast.makeText(context, "Item deleted", Toast.LENGTH_SHORT).show()
+                            }
+                            .addOnFailureListener {
+                                Toast.makeText(context, "Error deleting item", Toast.LENGTH_SHORT).show()
+                            }
                     })
                 }
 
@@ -165,8 +216,29 @@ fun shoppingMain(locationUtils: LocationUtils, viewModel: LocationViewModel, nav
                 .padding(8.dp), horizontalArrangement = Arrangement.SpaceBetween){
                 Button(onClick = {
                     if(itemName.isNotBlank()){
-                        val newItem= ShoppingItem(name = itemName, quantity = itemQuantity.toInt(),id=shopItems.size+1, address = adress)
-                        shopItems=shopItems+newItem
+                        val newItem= ShoppingItem(name = itemName, quantity = itemQuantity.toInt(),id="", address = adress, latitude = latitude, longitude = longitude)
+                        db.collection("shopping_items").add(newItem)
+                            .addOnSuccessListener { documentReference ->
+                                newItem.id = documentReference.id
+                                db.collection("shopping_items").document(newItem.id)
+                                    .set(newItem)
+                                    .addOnSuccessListener {
+                                        Toast.makeText(context, "Item added", Toast.LENGTH_SHORT).show()
+                                    }
+                                    .addOnFailureListener { e ->
+                                        Log.e("Warning", e.message.toString())
+                                        Toast.makeText(context, "Error adding item", Toast.LENGTH_SHORT).show()
+                                    }
+                                filteredItems = filteredItems + newItem
+                                shopItems = shopItems + newItem
+                                itemName = ""
+                                itemQuantity = "0"
+                                showDialog = false
+                            }
+                            .addOnFailureListener { e ->
+                                Log.e("Warning", e.message.toString())
+                                Toast.makeText(context, "Error adding item", Toast.LENGTH_SHORT).show()
+                            }
                         itemName="";
                         itemQuantity="0"
                         showDialog=false
@@ -196,6 +268,7 @@ fun shoppingMain(locationUtils: LocationUtils, viewModel: LocationViewModel, nav
                 Button(onClick = {
                     if(locationUtils.hasLocationPermission(context)){
                         locationUtils.requestLocationUpdates(viewModel)
+                        viewModel.shoppingItems.value=filteredItems
                         navController.navigate("locationscreen"){
                             this.launchSingleTop
                         }
@@ -226,7 +299,9 @@ fun ShoppingItemShow(
             ),
         horizontalArrangement =  Arrangement.SpaceBetween
     ){
-        Column(modifier = Modifier.weight(1f).padding(8.dp)) {
+        Column(modifier = Modifier
+            .weight(1f)
+            .padding(8.dp)) {
             Row{
                 Text(text = item.name, modifier = Modifier.padding(8.dp))
                 Text(text = "Qty: ${item.quantity}", modifier = Modifier.padding(8.dp))

@@ -25,16 +25,21 @@ fun Navigation(){
     val viewModel: LocationViewModel = viewModel()
     val context= LocalContext.current
     val locationUtils= LocationUtils(context)
+    locationUtils.requestLocationUpdates(viewModel)
     val userViewModel:UserProfileViewModel=viewModel()
     NavHost(navController = navController, startDestination = "login"){
         composable("shoppingListScreen"){
-            shoppingMain(
-                locationUtils = locationUtils,
-                viewModel = viewModel,
-                navController = navController,
-                context = context,
-                adress =viewModel.address.value.firstOrNull()?.formatted_address?:"No address"
-            )
+            viewModel.location.value?.let { it1 ->
+                shoppingMain(
+                    locationUtils = locationUtils,
+                    viewModel = viewModel,
+                    navController = navController,
+                    context = context,
+                    adress =viewModel.address.value.firstOrNull()?.formatted_address?:"No address",
+                    longitude = it1.longitude,
+                    latitude = it1.longitude
+                )
+            }
         }
         composable("login"){
             LoginScreen(navController = navController,viewModel)
@@ -48,6 +53,7 @@ fun Navigation(){
         dialog("locationScreen"){navBackStackEntry ->
             viewModel.location.value?.let {it1->
                 LocationSelectScreen(viewModel,location = it1) {locationData->
+                    viewModel.updateLocation(locationData)
                     viewModel.fetchAddress("${locationData.latitude},${locationData.longitude}")
                     navController.popBackStack()
                 }

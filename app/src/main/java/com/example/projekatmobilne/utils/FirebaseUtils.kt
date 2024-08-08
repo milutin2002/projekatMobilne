@@ -5,19 +5,42 @@ import com.example.projekatmobilne.viewModels.LocationViewModel
 
 
 import android.net.Uri
-import android.widget.Toast
-import androidx.compose.ui.platform.LocalContext
+import android.util.Log
+import com.example.projekatmobilne.model.ShoppingItem
 import com.example.projekatmobilne.model.User
 import com.example.projekatmobilne.viewModels.UserProfileViewModel
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.userProfileChangeRequest
+import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.FirebaseStorage
 
 object FirebaseUtil {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val storage: FirebaseStorage = FirebaseStorage.getInstance()
     private var photoUri:Uri?=null
-
+    fun fetchShoppingItems(onSuccess: (List<ShoppingItem>) -> Unit, onFailure: (Exception) -> Unit) {
+        val db = Firebase.firestore
+        db.collection("shopping_items")
+            .get()
+            .addOnSuccessListener { result ->
+                val items = result.map { document ->
+                    document.toObject(ShoppingItem::class.java)
+                }
+                onSuccess(items)
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception)
+            }
+    }
+    fun distanceBetween(latLng1: com.google.android.gms.maps.model.LatLng, latLng2: com.google.android.gms.maps.model.LatLng): Float {
+        val results = FloatArray(1)
+        android.location.Location.distanceBetween(
+            latLng1.latitude, latLng1.longitude,
+            latLng2.latitude, latLng2.longitude,
+            results
+        )
+        return results[0]
+    }
     fun register(
         username: String,
         password: String,
@@ -41,7 +64,7 @@ object FirebaseUtil {
                     }
                 }
             } else {
-                println("Error creating user: ${task.exception}")
+                Log.e("Error creating user", task.exception?.message.toString())
             }
         }
     }

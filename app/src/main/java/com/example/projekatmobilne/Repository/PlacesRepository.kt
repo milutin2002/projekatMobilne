@@ -29,6 +29,24 @@ class PlaceRepository(private val apiService: PlacesApiService) {
             }
         }
     }
+    suspend fun fetchClosestPlaces(location: String, radius: Int, type: String, apiKey: String): List<Place>? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = apiService.getClosestPlaces(location, radius, type, apiKey)
+                Log.d("API_RESPONSE", "Response: ${response.toString()}")
+
+                if (response.results.isNotEmpty()) {
+                    // Return the list of closest places
+                    response.results
+                } else {
+                    null
+                }
+            } catch (e: Exception) {
+                Log.d("Exception_api", e.message.toString())
+                null
+            }
+        }
+    }
 }
 
 

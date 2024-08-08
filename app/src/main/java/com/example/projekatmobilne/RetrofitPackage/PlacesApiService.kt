@@ -14,4 +14,11 @@ interface PlacesApiService {
         @Query("type") type: String,
         @Query("key") apiKey: String
     ): PlaceResponse
+    @GET("place/nearbysearch/json")
+    suspend fun getClosestPlaces(
+        @Query("location") location: String,
+        @Query("radius") radius: Int,
+        @Query("type") type: String,
+        @Query("key") apiKey: String
+    ): PlaceResponse
 }
