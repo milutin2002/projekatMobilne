@@ -50,6 +50,7 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.proj.FirebaseUtil.distanceBetween
 import com.example.proj.FirebaseUtil.fetchShoppingItems
+import com.example.proj.FirebaseUtil.updateUserPoints
 import com.example.projekatmobilne.utils.LocationUtils
 import com.example.projekatmobilne.MainActivity
 import com.example.projekatmobilne.Service.NotificationWorker
@@ -168,43 +169,7 @@ fun shoppingMain(locationUtils: LocationUtils, viewModel: LocationViewModel, nav
         ) {
             items(filteredItems) {
                     item->
-                if(item.isEditing){
-                    ShoppingItemEditor(shopingItem = item) {
-                            editedName,editQuantity->
-                        shopItems = shopItems.map { it.copy(isEditing = false) }
-                        val editedItem = shopItems.find { it.id == item.id }
-                        editedItem?.let {
-                            it.name = editedName
-                            it.quantity = editQuantity
-                            it.address=adress
-                            db.collection("shopping_items").document(it.id.toString())
-                                .set(it)
-                                .addOnSuccessListener {
-                                    Toast.makeText(context, "Item updated", Toast.LENGTH_SHORT).show()
-                                }
-                                .addOnFailureListener {
-                                    Toast.makeText(context, "Error updating item", Toast.LENGTH_SHORT).show()
-                                }
-                        }
-                    }
-                }
-                else{
-                    ShoppingItemShow(item = item, onEditClick = {
-                        shopItems=shopItems.map { it.copy(isEditing = it.id==item.id) }
-                    }, onDeleteClick = {
-                        filteredItems=filteredItems-item
-                        shopItems=shopItems-item
-                        db.collection("shopping_items").document(item.id.toString())
-                            .delete()
-                            .addOnSuccessListener {
-                                Toast.makeText(context, "Item deleted", Toast.LENGTH_SHORT).show()
-                            }
-                            .addOnFailureListener {
-                                Toast.makeText(context, "Error deleting item", Toast.LENGTH_SHORT).show()
-                            }
-                    })
-                }
-
+                    ShoppingItemShow(item = item)
             }
         }
 
@@ -220,20 +185,20 @@ fun shoppingMain(locationUtils: LocationUtils, viewModel: LocationViewModel, nav
                         db.collection("shopping_items").add(newItem)
                             .addOnSuccessListener { documentReference ->
                                 newItem.id = documentReference.id
+                                newItem.userId=viewModel.id.value
                                 db.collection("shopping_items").document(newItem.id)
                                     .set(newItem)
                                     .addOnSuccessListener {
+                                        // Update points for adding a new item
+                                        filteredItems=filteredItems+newItem
+                                        shopItems=shopItems+newItem
+                                        updateUserPoints(newItem.userId, 10) // Example: 10 points for adding a new item
                                         Toast.makeText(context, "Item added", Toast.LENGTH_SHORT).show()
                                     }
                                     .addOnFailureListener { e ->
                                         Log.e("Warning", e.message.toString())
                                         Toast.makeText(context, "Error adding item", Toast.LENGTH_SHORT).show()
                                     }
-                                filteredItems = filteredItems + newItem
-                                shopItems = shopItems + newItem
-                                itemName = ""
-                                itemQuantity = "0"
-                                showDialog = false
                             }
                             .addOnFailureListener { e ->
                                 Log.e("Warning", e.message.toString())
@@ -285,9 +250,7 @@ fun shoppingMain(locationUtils: LocationUtils, viewModel: LocationViewModel, nav
 }
 @Composable
 fun ShoppingItemShow(
-    item: ShoppingItem,
-    onEditClick: () -> Unit,
-    onDeleteClick: () -> Unit,
+    item: ShoppingItem
 ){
     Row(
         modifier = Modifier
@@ -312,50 +275,9 @@ fun ShoppingItemShow(
             }
         }
 
-        Row(modifier = Modifier.padding(8.dp)){
-            IconButton(onClick = onEditClick){
-                Icon(imageVector = Icons.Default.Edit, contentDescription = null)
-            }
-
-            IconButton(onClick = onDeleteClick){
-                Icon(imageVector = Icons.Default.Delete, contentDescription = null)
-            }
-
-        }
     }
 }
 
-@Composable
-fun ShoppingItemEditor(shopingItem: ShoppingItem, onEditComplete:(String, Int)->Unit){
-    var editName by remember { mutableStateOf(shopingItem.name) }
-    var editQuantity by remember { mutableStateOf(shopingItem.quantity.toString()) }
-    var isEditing by remember { mutableStateOf(shopingItem.isEditing) }
-    Row (modifier = Modifier
-        .fillMaxWidth()
-        .background(Color.White)
-        .padding(8.dp), horizontalArrangement = Arrangement.SpaceEvenly){
-        Column {
-            BasicTextField(value = editName, onValueChange ={
-                editName=it
-            } , singleLine = true, modifier = Modifier
-                .wrapContentSize()
-                .padding(8.dp))
-            BasicTextField(value = editQuantity, onValueChange ={
-                if(it.isDigitsOnly()){
-                    editQuantity=it
-                }
-            } , singleLine = true, modifier = Modifier
-                .wrapContentSize()
-                .padding(8.dp))
-            Button(onClick = {
-                isEditing=false
-                onEditComplete(editName,editQuantity.toInt())
-            }) {
-                Text(text = "Save")
-            }
-        }
-    }
-}
 fun setupPeriodicWork(context: Context) {
     val workRequest = PeriodicWorkRequestBuilder<NotificationWorker>(15, TimeUnit.MINUTES)
         .build()

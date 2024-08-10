@@ -59,6 +59,14 @@ fun UserProfileScreen(navController: NavController) {
             ) {
                 Text("Go to Shopping List")
             }
+            Button(
+                onClick = {
+                    navController.navigate("leaderboard")
+                },
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Text("Go to ranking")
+            }
         }
     }
 }

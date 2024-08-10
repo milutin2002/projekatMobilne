@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
+import com.example.projekatmobilne.ui.theme.screens.LeaderboardScreen
 import com.example.projekatmobilne.ui.theme.screens.LocationSelectScreen
 import com.example.projekatmobilne.ui.theme.screens.LoginScreen
 import com.example.projekatmobilne.ui.theme.screens.RegisterScreen
@@ -49,6 +50,9 @@ fun Navigation(){
         }
         composable("userProfile"){
             UserProfileScreen(navController = navController)
+        }
+        composable("leaderboard"){
+            LeaderboardScreen()
         }
         dialog("locationScreen"){navBackStackEntry ->
             viewModel.location.value?.let {it1->

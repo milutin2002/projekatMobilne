@@ -11,6 +11,7 @@ import com.example.projekatmobilne.model.User
 import com.example.projekatmobilne.viewModels.UserProfileViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.FirebaseStorage
 
@@ -31,6 +32,19 @@ object FirebaseUtil {
             .addOnFailureListener { exception ->
                 onFailure(exception)
             }
+    }
+    fun updateUserPoints(userId: String, points: Int) {
+        val db = FirebaseFirestore.getInstance()
+        val userRef = db.collection("users").document(userId)
+        db.runTransaction { transaction ->
+            val snapshot = transaction.get(userRef)
+            val newPoints = snapshot.getLong("points")?.plus(points) ?: points.toLong()
+            transaction.update(userRef, "points", newPoints)
+        }.addOnSuccessListener {
+            Log.d("Points", "User points updated successfully")
+        }.addOnFailureListener { e ->
+            Log.e("Points", "Failed to update user points", e)
+        }
     }
     fun distanceBetween(latLng1: com.google.android.gms.maps.model.LatLng, latLng2: com.google.android.gms.maps.model.LatLng): Float {
         val results = FloatArray(1)
