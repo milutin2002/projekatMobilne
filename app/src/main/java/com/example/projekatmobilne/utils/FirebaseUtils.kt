@@ -46,15 +46,6 @@ object FirebaseUtil {
             Log.e("Points", "Failed to update user points", e)
         }
     }
-    fun distanceBetween(latLng1: com.google.android.gms.maps.model.LatLng, latLng2: com.google.android.gms.maps.model.LatLng): Float {
-        val results = FloatArray(1)
-        android.location.Location.distanceBetween(
-            latLng1.latitude, latLng1.longitude,
-            latLng2.latitude, latLng2.longitude,
-            results
-        )
-        return results[0]
-    }
     fun register(
         username: String,
         password: String,
@@ -62,6 +53,7 @@ object FirebaseUtil {
         phoneNumber: String,
         userProfileViewModel: UserProfileViewModel,
         uri: Uri,
+        onFailure: (s:String) -> Unit,
         onComplete: () -> Unit
     ) {
         auth.createUserWithEmailAndPassword(username, password).addOnCompleteListener { task ->
@@ -74,24 +66,24 @@ object FirebaseUtil {
                             userProfileViewModel.addUserProfile(user!!.uid, User(downloadUri.toString(), fullName, username, phoneNumber),onComplete)
                         }
                     } else {
-                        println("Error uploading image: ${uploadTask.exception}")
+                        task.exception?.message?.let { onFailure(it) }
                     }
                 }
             } else {
-                Log.e("Error creating user", task.exception?.message.toString())
+                task.exception?.message?.let { onFailure(it) }
             }
         }
     }
 
 
-    fun signIn(username: String, password: String, viewModel: LocationViewModel,onComplete: (String,LocationViewModel) -> Unit) {
+    fun signIn(username: String, password: String, viewModel: LocationViewModel,onFailure: () -> kotlin.Unit,onComplete: (String,LocationViewModel) -> Unit) {
         auth.signInWithEmailAndPassword(username, password).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 if(auth.currentUser!=null){
                     onComplete(auth.currentUser!!.uid,viewModel)
                 }
             } else {
-                // Handle sign-in failure
+                onFailure();
             }
         }
     }

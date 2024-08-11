@@ -43,10 +43,10 @@ fun Navigation(){
             }
         }
         composable("login"){
-            LoginScreen(navController = navController,viewModel)
+            LoginScreen(navController = navController,viewModel,context)
         }
         composable("register"){
-            RegisterScreen(navController = navController,userViewModel)
+            RegisterScreen(navController = navController,userViewModel,context)
         }
         composable("userProfile"){
             UserProfileScreen(navController = navController)

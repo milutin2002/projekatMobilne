@@ -1,6 +1,8 @@
 package com.example.projekatmobilne.ui.theme.screens
 
+import android.content.Context
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.VectorConverter
@@ -38,7 +40,7 @@ import com.google.firebase.auth.FirebaseAuth
 
 
 @Composable
-fun RegisterScreen(navController: NavController,userViewModel: UserProfileViewModel) {
+fun RegisterScreen(navController: NavController,userViewModel: UserProfileViewModel,context:Context) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var fullName by remember { mutableStateOf("") }
@@ -97,9 +99,14 @@ fun RegisterScreen(navController: NavController,userViewModel: UserProfileViewMo
         }
         Button(onClick = {
             photoUri?.let {
-                FirebaseUtil.register(username, password, fullName, phoneNumber,userViewModel, it) {
+                FirebaseUtil.register(username, password, fullName, phoneNumber,userViewModel, it, onFailure = {s->
+                    Toast.makeText(context,s,Toast.LENGTH_LONG).show()
+                }) {
                     navController.navigate("login")
                 }
+            }
+            if(photoUri==null){
+                Toast.makeText(context,"You didn't select image",Toast.LENGTH_LONG).show()
             }
         }) {
             Text("Register")

@@ -48,7 +48,6 @@ import androidx.navigation.NavController
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import com.example.proj.FirebaseUtil.distanceBetween
 import com.example.proj.FirebaseUtil.fetchShoppingItems
 import com.example.proj.FirebaseUtil.updateUserPoints
 import com.example.projekatmobilne.utils.LocationUtils
