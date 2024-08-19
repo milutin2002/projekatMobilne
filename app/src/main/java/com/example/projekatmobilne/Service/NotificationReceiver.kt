@@ -12,7 +12,6 @@ import com.example.projekatmobilne.R
 
 class NotificationReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        // Pretpostavljamo da ćemo dobiti podatke o lokaciji iz nekog izvora
         val latitude = 0.0
         val longitude = 0.0
         showNotification(context, latitude, longitude)

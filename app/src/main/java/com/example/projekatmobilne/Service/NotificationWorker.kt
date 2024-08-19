@@ -21,12 +21,11 @@ class NotificationWorker(context: Context, workerParams: WorkerParameters) : Cor
 
     override suspend fun doWork(): Result {
         val locationUtils = LocationUtils(applicationContext)
-        if(locationUtils.hasLocationPermission(context = applicationContext) && locationUtils.hasBackgroundLocationPermission()) { // Dobijanje trenutne lokacije u okviru koroutine konteksta
+        if(locationUtils.hasLocationPermission(context = applicationContext) && locationUtils.hasBackgroundLocationPermission()) {
             val location = withContext(Dispatchers.IO) {
                 getLocation(locationUtils)
             }
 
-            // Ako je lokacija uspešno dobijena, zatraži najbliže prodavnice
             if (location != null) {
                 val placesRepository = PlaceRepository(RetrofitInstance.apiService)
                 val apiKey = ""
@@ -39,7 +38,6 @@ class NotificationWorker(context: Context, workerParams: WorkerParameters) : Cor
                     )
                 }
                 Log.d("Place ", places.toString())
-                // Slanje notifikacije sa najbližom prodavnicom ili porukom o neuspehu
                 if (places != null) {
                     sendNotification("Nearest place: ${places.name}")
                 } else {

@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.proj.FirebaseUtil.fetchUsers
 import com.example.projekatmobilne.model.ShoppingItem
 import com.example.projekatmobilne.model.User
 import com.google.firebase.firestore.FirebaseFirestore
@@ -64,15 +65,11 @@ fun LeaderboardScreen() {
         }
     }
     LaunchedEffect(Unit){
-        db.collection("users")
-            .orderBy("points", Query.Direction.DESCENDING)
-            .get()
-            .addOnSuccessListener { result ->
-                users = result.toObjects(User::class.java)
-            }
-            .addOnFailureListener { e ->
-                Log.e("Leaderboard", "Error fetching leaderboard", e)
-            }
+        fetchUsers(onSuccess = {
+            users=it
+        }, onFailure = {
+            Log.e("Fetching user errors",it.message.toString())
+        })
     }
 
 }

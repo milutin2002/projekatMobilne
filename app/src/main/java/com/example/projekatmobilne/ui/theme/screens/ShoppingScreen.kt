@@ -48,6 +48,7 @@ import androidx.navigation.NavController
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.example.proj.FirebaseUtil.addItem
 import com.example.proj.FirebaseUtil.fetchShoppingItems
 import com.example.proj.FirebaseUtil.updateUserPoints
 import com.example.projekatmobilne.utils.LocationUtils
@@ -75,7 +76,6 @@ fun shoppingMain(locationUtils: LocationUtils, viewModel: LocationViewModel, nav
             if (permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true &&
                 permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true &&
                 (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q || permissions[Manifest.permission.ACCESS_BACKGROUND_LOCATION] == true)) {
-                // I HAVE ACCESS to location
                 locationUtils.requestLocationUpdates(viewModel = viewModel)
             } else {
                 val rationaleRequired = (ActivityCompat.shouldShowRequestPermissionRationale(
@@ -103,7 +103,7 @@ fun shoppingMain(locationUtils: LocationUtils, viewModel: LocationViewModel, nav
         }
     )
     LaunchedEffect(Unit) {
-        fetchShoppingItems(
+        fetchShoppingItems(userId = viewModel.id.value,
             onSuccess = { fetchedItems ->
              shopItems=fetchedItems
                 filteredItems=fetchedItems
@@ -181,28 +181,15 @@ fun shoppingMain(locationUtils: LocationUtils, viewModel: LocationViewModel, nav
                 Button(onClick = {
                     if(itemName.isNotBlank()){
                         val newItem= ShoppingItem(name = itemName, quantity = itemQuantity.toInt(),id="", address = adress, latitude = latitude, longitude = longitude)
-                        db.collection("shopping_items").add(newItem)
-                            .addOnSuccessListener { documentReference ->
-                                newItem.id = documentReference.id
-                                newItem.userId=viewModel.id.value
-                                db.collection("shopping_items").document(newItem.id)
-                                    .set(newItem)
-                                    .addOnSuccessListener {
-                                        // Update points for adding a new item
-                                        filteredItems=filteredItems+newItem
-                                        shopItems=shopItems+newItem
-                                        updateUserPoints(newItem.userId, 10) // Example: 10 points for adding a new item
-                                        Toast.makeText(context, "Item added", Toast.LENGTH_SHORT).show()
-                                    }
-                                    .addOnFailureListener { e ->
-                                        Log.e("Warning", e.message.toString())
-                                        Toast.makeText(context, "Error adding item", Toast.LENGTH_SHORT).show()
-                                    }
-                            }
-                            .addOnFailureListener { e ->
-                                Log.e("Warning", e.message.toString())
-                                Toast.makeText(context, "Error adding item", Toast.LENGTH_SHORT).show()
-                            }
+                        addItem(newItem,viewModel, onSuccess = {
+                            item->
+                            shopItems=shopItems+item
+                            filteredItems=filteredItems+item
+                            Toast.makeText(context,"Success in adding item",Toast.LENGTH_LONG).show()
+                        }){ e->
+                            Log.e("Error in adding",e.message.toString())
+                            Toast.makeText(context,"Failure in adding item",Toast.LENGTH_LONG).show()
+                        }
                         itemName="";
                         itemQuantity="0"
                         showDialog=false
