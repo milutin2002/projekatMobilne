@@ -18,6 +18,7 @@ import com.example.projekatmobilne.ui.theme.screens.shoppingMain
 import com.example.projekatmobilne.utils.LocationUtils
 import com.example.projekatmobilne.viewModels.LocationViewModel
 import com.example.projekatmobilne.viewModels.UserProfileViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
@@ -28,7 +29,12 @@ fun Navigation(){
     val locationUtils= LocationUtils(context)
     locationUtils.requestLocationUpdates(viewModel)
     val userViewModel:UserProfileViewModel=viewModel()
-    NavHost(navController = navController, startDestination = "login"){
+    var startDestination:String="login"
+    FirebaseAuth.getInstance().currentUser?.let {
+        startDestination="userProfile"
+        viewModel.setUserId(it.uid)
+    }
+    NavHost(navController = navController, startDestination = startDestination){
         composable("shoppingListScreen"){
             viewModel.location.value?.let { it1 ->
                 shoppingMain(

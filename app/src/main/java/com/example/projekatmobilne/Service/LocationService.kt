@@ -23,11 +23,7 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 
 class LocationService : Service() {
-    companion object {
-        const val ACTION_START = "com.example.projekatmobilne.START"
-        const val ACTION_STOP = "com.example.projekatmobilne.STOP"
-        private const val CHANNEL_ID = "LocationServiceChannel"
-    }
+
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
@@ -40,28 +36,13 @@ class LocationService : Service() {
         setupLocationCallback()
         startForegroundService()
     }
-    private fun setAlarm() {
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(this, NotificationReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
-        val intervalMillis = 10000L // 10 seconds
-
-        alarmManager.setRepeating(
-            AlarmManager.RTC_WAKEUP,
-            System.currentTimeMillis() + intervalMillis,
-            intervalMillis,
-            pendingIntent
-        )
-    }
     private fun setupLocationCallback() {
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 locationResult.locations.forEach { location ->
                     // Handle location updates
                     Log.d("LocationService", "Location: ${location.latitude}, ${location.longitude}")
-
-                    // Example: show notification with location details
                     showNotification(location.latitude, location.longitude)
                 }
             }

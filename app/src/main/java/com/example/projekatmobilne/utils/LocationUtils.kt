@@ -30,24 +30,7 @@ class LocationUtils(val context: Context) {
         private const val LOCATION_REQUEST_CODE = 1000
         private const val BACKGROUND_LOCATION_REQUEST_CODE = 1001
     }
-    fun startService() {
 
-        val intent = Intent(context, LocationService::class.java).apply {
-            action = LocationService.ACTION_START
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.startForegroundService(intent)
-        } else {
-            context.startService(intent)
-        }
-    }
-
-    fun stopService() {
-        val intent = Intent(context, LocationService::class.java).apply {
-            action = LocationService.ACTION_STOP
-        }
-        context.stopService(intent)
-    }
     private val _fusedLocationClient: FusedLocationProviderClient
             = LocationServices.getFusedLocationProviderClient(context)
 
@@ -113,7 +96,7 @@ class LocationUtils(val context: Context) {
     }
     fun requestLocationPermissions(activity: Activity) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            // Prvo traži dozvolu za fine i coarse location
+
             ActivityCompat.requestPermissions(
                 activity,
                 arrayOf(
@@ -122,14 +105,13 @@ class LocationUtils(val context: Context) {
                 ),
                 LOCATION_REQUEST_CODE
             )
-            // Nakon što je prvo dozvoljeno, traži pozadinsku dozvolu
+
             ActivityCompat.requestPermissions(
                 activity,
                 arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),
                 BACKGROUND_LOCATION_REQUEST_CODE
             )
         } else {
-            // Samo fine i coarse location za starije verzije
             ActivityCompat.requestPermissions(
                 activity,
                 arrayOf(

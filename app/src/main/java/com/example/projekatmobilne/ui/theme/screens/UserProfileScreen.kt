@@ -67,6 +67,15 @@ fun UserProfileScreen(navController: NavController) {
             ) {
                 Text("Go to ranking")
             }
+            Button(
+                onClick = {
+                    FirebaseAuth.getInstance().signOut()
+                    navController.navigate("login")
+                },
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Text("Log out")
+            }
         }
     }
 }

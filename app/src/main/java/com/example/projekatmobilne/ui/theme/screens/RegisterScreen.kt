@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
@@ -61,13 +62,13 @@ fun RegisterScreen(navController: NavController,userViewModel: UserProfileViewMo
         OutlinedTextField(
             value = username,
             onValueChange = { username = it },
-            label = { Text("Username") },
+            label = { Text("Email") },
             modifier = androidx.compose.ui.Modifier.fillMaxWidth().padding(8.dp)
         )
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            label = { Text("Password") },
+            label = { Text("Password") },visualTransformation = PasswordVisualTransformation(),
             modifier = androidx.compose.ui.Modifier.fillMaxWidth().padding(bottom = 8.dp)
         )
         OutlinedTextField(

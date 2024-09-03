@@ -2,12 +2,15 @@ package com.example.projekatmobilne.Service
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.example.projekatmobilne.MainActivity
 import com.example.projekatmobilne.R
 import com.example.projekatmobilne.Repository.PlaceRepository
 import com.example.projekatmobilne.RetrofitPackage.RetrofitInstance
@@ -66,11 +69,16 @@ class NotificationWorker(context: Context, workerParams: WorkerParameters) : Cor
             val channel = NotificationChannel(channelId, "Default Channel", NotificationManager.IMPORTANCE_DEFAULT)
             notificationManager.createNotificationChannel(channel)
         }
+        val intent = Intent(applicationContext, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val pendingIntent: PendingIntent = PendingIntent.getActivity(applicationContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 
         val notification = NotificationCompat.Builder(applicationContext, channelId)
             .setContentTitle("Nearby Store")
             .setContentText(message)
             .setSmallIcon(R.drawable.ic_notification)
+            .setContentIntent(pendingIntent)
             .build()
 
         notificationManager.notify(1, notification)
