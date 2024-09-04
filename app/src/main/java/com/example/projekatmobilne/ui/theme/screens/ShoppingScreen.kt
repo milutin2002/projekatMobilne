@@ -37,6 +37,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,13 +64,12 @@ import java.util.concurrent.TimeUnit
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun shoppingMain(locationUtils: LocationUtils, viewModel: LocationViewModel, navController: NavController, context: Context, adress:String,latitude: Double, longitude: Double) {
-    var shopItems by remember { mutableStateOf(listOf<ShoppingItem>()) }
-    var filteredItems by remember {mutableStateOf(listOf<ShoppingItem>())}
-    var showDialog by remember { mutableStateOf(false) }
-    var itemName by remember { mutableStateOf("") }
-    var itemQuantity by remember { mutableStateOf("0") }
-    var searchField by remember { mutableStateOf("") }
-    val db = FirebaseFirestore.getInstance()
+    var shopItems by rememberSaveable { mutableStateOf(listOf<ShoppingItem>()) }
+    var filteredItems by rememberSaveable {mutableStateOf(listOf<ShoppingItem>())}
+    var showDialog by rememberSaveable { mutableStateOf(false) }
+    var itemName by rememberSaveable { mutableStateOf("") }
+    var itemQuantity by rememberSaveable { mutableStateOf("0") }
+    var searchField by rememberSaveable { mutableStateOf("") }
     val requestPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
         onResult = { permissions ->
@@ -110,6 +110,7 @@ fun shoppingMain(locationUtils: LocationUtils, viewModel: LocationViewModel, nav
             },
             onFailure = { exception ->
                 var errorMessage = "Error fetching items: ${exception.message}"
+                Toast.makeText(context,errorMessage,Toast.LENGTH_LONG).show()
             }
         )
     }

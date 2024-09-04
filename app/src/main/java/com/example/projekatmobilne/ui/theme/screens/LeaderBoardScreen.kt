@@ -41,7 +41,6 @@ import com.google.firebase.firestore.Query
 @Composable
 fun LeaderboardScreen() {
     var users by remember { mutableStateOf(listOf<User>()) }
-    val db = FirebaseFirestore.getInstance()
     Column(
         modifier = Modifier
             .fillMaxSize()

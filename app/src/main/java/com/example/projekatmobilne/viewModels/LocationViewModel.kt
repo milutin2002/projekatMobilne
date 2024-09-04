@@ -16,7 +16,6 @@ import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.launch
 
 class LocationViewModel:ViewModel() {
-    private val userRepository:UserRepository= UserRepository()
     private val _location= mutableStateOf<LocationData?>(null)
     val location : State<LocationData?> = _location
     private val _shoppingItems= mutableStateOf(listOf<ShoppingItem>())

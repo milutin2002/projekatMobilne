@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,11 +43,11 @@ import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun RegisterScreen(navController: NavController,userViewModel: UserProfileViewModel,context:Context) {
-    var username by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var fullName by remember { mutableStateOf("") }
-    var phoneNumber by remember { mutableStateOf("") }
-    var photoUri by remember { mutableStateOf<Uri?>(null) }
+    var username by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
+    var fullName by rememberSaveable { mutableStateOf("") }
+    var phoneNumber by rememberSaveable { mutableStateOf("") }
+    var photoUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -55,7 +56,9 @@ fun RegisterScreen(navController: NavController,userViewModel: UserProfileViewMo
     }
 
     Column(
-        modifier = androidx.compose.ui.Modifier.fillMaxSize().padding(8.dp),
+        modifier = androidx.compose.ui.Modifier
+            .fillMaxSize()
+            .padding(8.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -63,25 +66,33 @@ fun RegisterScreen(navController: NavController,userViewModel: UserProfileViewMo
             value = username,
             onValueChange = { username = it },
             label = { Text("Email") },
-            modifier = androidx.compose.ui.Modifier.fillMaxWidth().padding(8.dp)
+            modifier = androidx.compose.ui.Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
         )
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
             label = { Text("Password") },visualTransformation = PasswordVisualTransformation(),
-            modifier = androidx.compose.ui.Modifier.fillMaxWidth().padding(bottom = 8.dp)
+            modifier = androidx.compose.ui.Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp)
         )
         OutlinedTextField(
             value = fullName,
             onValueChange = { fullName = it },
             label = { Text("Full Name") },
-            modifier = androidx.compose.ui.Modifier.fillMaxWidth().padding(bottom = 8.dp)
+            modifier = androidx.compose.ui.Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp)
         )
         OutlinedTextField(
             value = phoneNumber,
             onValueChange = { phoneNumber = it },
             label = { Text("Phone Number") },
-            modifier = androidx.compose.ui.Modifier.fillMaxWidth().padding(bottom = 8.dp)
+            modifier = androidx.compose.ui.Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp)
         )
         Button(onClick = { launcher.launch("image/*") }) {
             Text("Select Photo")

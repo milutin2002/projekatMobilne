@@ -11,6 +11,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -29,7 +30,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 
 @Composable
-fun LocationSelectScreen(viewModel:LocationViewModel,location:LocationData,onLocationSelected:(LocationData)->Unit){
+fun LocationSelectScreen(location:LocationData,onLocationSelected:(LocationData)->Unit){
     val userLocation = remember { mutableStateOf(LatLng(location.latitude, location.longitude)) }
     val shopLocation = remember { mutableStateOf(LatLng(location.latitude,location.longitude)) }
     val cameraPositionState = rememberCameraPositionState {
@@ -39,7 +40,7 @@ fun LocationSelectScreen(viewModel:LocationViewModel,location:LocationData,onLoc
     val markerState = remember { MarkerState(position = userLocation.value) }
     val shopMarkerState= remember {MarkerState(position = shopLocation.value)}
     var nearbyPlaces by remember { mutableStateOf<List<Place>?>(null) }
-    var radiusInMeters by remember { mutableStateOf(1) }
+    var radiusInMeters by rememberSaveable { mutableStateOf(1) }
 
     suspend fun fetchNearbyPlaces(latLng: LatLng) {
         val placeRepository = PlaceRepository(apiService = RetrofitInstance.apiService)
@@ -49,7 +50,6 @@ fun LocationSelectScreen(viewModel:LocationViewModel,location:LocationData,onLoc
     }
 
     LaunchedEffect(Unit) {
-        // Initial fetch of nearby places
         fetchNearbyPlaces(userLocation.value)
     }
 
